@@ -49,7 +49,7 @@ I changed to use a HTML file with 50KB file size instead so that the differences
    `wrk -t8 -c200 -d10s http://127.0.0.1:8080/`
    ![alt text](image-9.png)
 
-Our read errors are increasing! Latency also starts increasing.
+Our read errors are increasing! Latency also starts increasing before pkauteuing? Because eventually every requests sits in the queue and waits its turn and I suppose the ttime taken to get from end to start of the queue.
 
 We can see our throughput remains relatively constant throughout. This is because our server is currently single-threaded and this is the max throughput it can handle - susequent requests are dropped if they cant fit in the queue.
 
