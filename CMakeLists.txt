@@ -25,3 +25,5 @@ target_include_directories(concurrent-web-server
 # --- Copy static files (e.g., index.html) to build directory ---
 file(COPY ${CMAKE_SOURCE_DIR}/public/index.html
      DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/public/big.html
+     DESTINATION ${CMAKE_BINARY_DIR})

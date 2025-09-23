@@ -10,12 +10,14 @@
 
 #define PORT 8080
 
+// parse file path
+
 // Build HTTP Response
 // For now, always serve index.html
 std::string buildResponse()
 {
     // Read file into string
-    std::ifstream file("index.html");
+    std::ifstream file("big.html");
     std::stringstream bufferStream;
     bufferStream << file.rdbuf();
     std::string html = bufferStream.str();
