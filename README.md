@@ -26,6 +26,15 @@ At its very minimal, a web server receives HTTP requests and responds with a cer
 
 ### Throughput (requests/second)
 
-![alt text](image.png)
+With low load:
+![alt text](image-1.png)
+
+With higher load, throughput remains relatively constant. Read error also start to appear.
+![alt text](image-2.png)
+
+Higher load, even more connections.
+![alt text](image-3.png)
+
+We can see our throughput remains relatively constant throughout. This is because our server is currently single-threaded and this is the max throughput it can handle - susequent requests are dropped if they cant fit in the queue.
 
 ### Latency Per Request

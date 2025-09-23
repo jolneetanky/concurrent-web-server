@@ -25,6 +25,7 @@ std::string buildResponse()
         "Content-Type: text/html\r\n"
         "Content-Length: " +
         std::to_string(html.size()) + "\r\n"
+                                      "Connection: close\r\n"
                                       "\r\n" +
         html;
 
