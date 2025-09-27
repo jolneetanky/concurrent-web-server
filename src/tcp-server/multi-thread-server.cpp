@@ -1,42 +1,28 @@
-#include "tcp-server.h"
-#include <sys/socket.h>
+#include "multi-thread-server.h"
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 #include <iostream>
-
-#include <fstream> // for std::ifstream
-#include <sstream> // for std::stringstream
+#include <unistd.h> // for close()
 
 #define PORT 8080
 
-// parse file path
+MultiThreadServer::MultiThreadServer(JobQueue<Task> &jobQueue) : m_jobQueue{jobQueue} {};
 
-// Build HTTP Response
-// For now, always serve index.html
-std::string buildResponse()
+void MultiThreadServer::startServer()
 {
-    // Read file into string
-    std::ifstream file("big.html");
-    std::stringstream bufferStream;
-    bufferStream << file.rdbuf();
-    std::string html = bufferStream.str();
+    // 1) open connections
+    // 2) listen for requests
+    // 3) for each request that comes in, open a new connection, and place that connection in a shared queue
+    // 4) notify worker threads, who will pick it up when notified
+    // 5) worker thread handles request and sends response
 
-    std::string response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        "Content-Length: " +
-        std::to_string(html.size()) + "\r\n"
-                                      "Connection: close\r\n"
-                                      "\r\n" +
-        html;
+    // POTENTIAL CONS OR WTV:
+    // depending on how the queue is implemented, this cuold become sequential,
+    // especially because every thread will modify the queue.
+    // one solution is to have sharded queue - each worker manages one queue shard -> minimize cross-core contention.
+    // that also allows us to have lock-free queue.
 
-    return response;
-}
-
-void TCPServer::startServer()
-{
     // server_fd: server file descriptor
+    // main thread listens and pushes to shared queue
     int server_fd, new_socket;
     struct sockaddr_in address; // IP address of host machine
     int opt = 1;
@@ -90,6 +76,12 @@ void TCPServer::startServer()
             exit(EXIT_FAILURE);
         }
 
+        // ADD TO TO SHARED QUEUE
+        // JobQueue.submit(new_socket);
+        // worker responsible for closing the socket
+        // m_jobQueue.submit(Task{std::move(new_socket)});
+
+        /*
         // 5. Read data
         read(new_socket, buffer, 1024);
         std::cout << "Message from client: " << buffer << std::endl;
@@ -99,12 +91,11 @@ void TCPServer::startServer()
         // 7. Build response
         std::string response = buildResponse();
 
-        std::cout << "RESPONSE: " << response << "\n";
-
         // 8. Send response
         send(new_socket, response.c_str(), response.size(), 0);
 
         // Close socket
+        */
         close(new_socket);
     }
     close(server_fd);

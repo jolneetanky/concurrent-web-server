@@ -10,7 +10,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Add source files
 set(SOURCES
     src/main.cpp
-    src/tcp-server/tcp-server.cpp
+    src/tcp-server/single-thread-server.cpp
+    src/tcp-server/job-queue.cpp
+    src/tcp-server/multi-thread-server.cpp
 )
 
 # Create the executable

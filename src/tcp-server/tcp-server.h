@@ -3,6 +3,6 @@
 class TCPServer
 {
 public:
-    void startServer(); // werver runs and can accept connections.
+    virtual void startServer() = 0; // werver runs and can accept connections.
     ~TCPServer() = default;
 };

@@ -38,7 +38,7 @@ Higher load, even more connections.
 I changed to use a HTML file with 50KB file size instead so that the differences in latency would be more meaningful - for instance, now we see the average latency lies in the ms range.
 
 1. Low load - minimal to no concurrent requests; raw sequential performance
-   `wrk -t1 c1 -d10s`
+   `wrk -t1 -c1 -d10s`
 2. Light concurrency
    `wrk -t2 -c10 -d10s` - simulating 10 concurrent clients
    ![alt text](image-8.png)
@@ -48,8 +48,12 @@ I changed to use a HTML file with 50KB file size instead so that the differences
 4. High load - high level of concurrent requests
    `wrk -t8 -c200 -d10s http://127.0.0.1:8080/`
    ![alt text](image-9.png)
+   `wrk -t12 -c800 -d30s http://127.0.0.1:8080/`
+   ![alt text](image-10.png)
 
-Our read errors are increasing! Latency also starts increasing before pkauteuing? Because eventually every requests sits in the queue and waits its turn and I suppose the ttime taken to get from end to start of the queue.
+So these are the benchmarks we're gonna be working with and make better.
+
+Our read errors are increasing! Latency also starts increasing before pkauteuing? Because eventually every requests sits in the queue and waits its turn and I suppose the ttime taken to get from end to start of the queue is now capped at around 18ms.
 
 We can see our throughput remains relatively constant throughout. This is because our server is currently single-threaded and this is the max throughput it can handle - susequent requests are dropped if they cant fit in the queue.
 
