@@ -74,7 +74,7 @@ With 3 worker threads, we see an improvement in request latencies as compared to
 | **10**              | ~0.42–0.53 ms                       | ~11 000–13 000 | ~530–650 MB/s     | Peak throughput; lowest latency                                                  |
 | **20**              | ~0.6–0.9 ms                         | ~8 600–9 600   | ~420–460 MB/s     | Throughput _drops_ again; diminishing returns                                    |
 
-From the results, it's clear how having too little threads to service requests leads to high latency, but having too many past a certain pointleads to deminishing returns as high contention for a bounded queue leads to greater overhead. It shows how tweaking parameters is just as important as the system's design.
+From the results, it's clear how having too little threads to service requests leads to high latency, but having too many past a certain point leads to diminishing returns as high contention for a bounded queue leads to greater overhead. It shows how tweaking parameters are just as important as the system's design.
 
 Latency aside, we see how throughput is much higher with multiple threads handling our workload - it improves by a factor of 2!
 
