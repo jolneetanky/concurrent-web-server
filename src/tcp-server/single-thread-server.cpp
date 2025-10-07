@@ -32,7 +32,7 @@ std::string buildResponse()
     return response;
 };
 
-void SingleThreadServer::startServer()
+void SingleThreadServer::start()
 {
     // server_fd: server file descriptor
     int server_fd, new_socket;
@@ -90,7 +90,7 @@ void SingleThreadServer::startServer()
 
         // 5. Read data
         read(new_socket, buffer, 1024);
-        std::cout << "Message from client: " << buffer << std::endl;
+        // std::cout << "Message from client: " << buffer << std::endl;
 
         // 6. Parse HTTP request
 

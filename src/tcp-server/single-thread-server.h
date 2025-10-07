@@ -4,5 +4,5 @@
 class SingleThreadServer : public TCPServer
 {
 public:
-    void startServer() override;
+    void start() override;
 };
