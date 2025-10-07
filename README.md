@@ -66,14 +66,17 @@ With 3 worker threads, we see an improvement in request latencies as compared to
 
 ### Comparison
 
-| Worker Threads | Avg Latency (µs/ms)               | Req/s          | Throughput (MB/s) | Observations                                  |
-| -------------- | --------------------------------- | -------------- | ----------------- | --------------------------------------------- |
-| **1**          | ~0.99 ms (LOW) → ~19 ms (HIGHEST) | ~5 200         | ~254 MB/s         | Baseline single-threaded                      |
-| **3**          | ~0.6 ms (LOW) → ~8 ms (HIGHEST)   | ~11 000        | ~540 MB/s         | Big jump in throughput; latency cut in half   |
-| **10**         | ~0.42–0.53 ms                     | ~11 000–13 000 | ~530–650 MB/s     | Peak throughput; lowest latency               |
-| **20**         | ~0.6–0.9 ms                       | ~8 600–9 600   | ~420–460 MB/s     | Throughput _drops_ again; diminishing returns |
+| Worker Threads      | Avg Latency (µs/ms)                 | Req/s          | Throughput (MB/s) | Observations                                                                     |
+| ------------------- | ----------------------------------- | -------------- | ----------------- | -------------------------------------------------------------------------------- |
+| **Naive (no sync)** | ~0.64 ms (LOW) → ~0.65 ms (HIGHEST) | ~5 700–6 100   | ~280–300 MB/s     | Baseline unsynchronized server; moderate throughput but unsafe under concurrency |
+| **1**               | ~0.99 ms (LOW) → ~19 ms (HIGHEST)   | ~5 200         | ~254 MB/s         | Baseline single-threaded (sequential)                                            |
+| **3**               | ~0.6 ms (LOW) → ~8 ms (HIGHEST)     | ~11 000        | ~540 MB/s         | Big jump in throughput; latency cut in half                                      |
+| **10**              | ~0.42–0.53 ms                       | ~11 000–13 000 | ~530–650 MB/s     | Peak throughput; lowest latency                                                  |
+| **20**              | ~0.6–0.9 ms                         | ~8 600–9 600   | ~420–460 MB/s     | Throughput _drops_ again; diminishing returns                                    |
 
 From the results, it's clear how having too little threads to service requests leads to high latency, but having too many past a certain pointleads to deminishing returns as high contention for a bounded queue leads to greater overhead. It shows how tweaking parameters is just as important as the system's design.
+
+Latency aside, w see how throughput is much higher with multiple threads handling our workload - it improves by a factor of 2!
 
 ## 4) Future Improvements
 
