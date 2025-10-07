@@ -4,28 +4,12 @@
 
 #define PORT 8080
 
-MultiThreadServer::MultiThreadServer(JobQueue<Task> &jobQueue, int numThreads) : m_jobQueue{jobQueue}, m_numThreads{numThreads} {};
+MultiThreadServer::MultiThreadServer(JobQueue<Task> &jobQueue) : m_jobQueue{jobQueue} {};
 
 // test this
 // when we make one connection request, push() is called
 void MultiThreadServer::start()
 {
-    // 1) open connections
-    // 2) listen for requests
-    // 3) for each request that comes in, open a new connection, and place that connection in a shared queue
-    // 4) notify worker threads, who will pick it up when notified
-    // 5) worker thread handles request and sends response
-
-    // POTENTIAL CONS OR WTV:
-    // depending on how the queue is implemented, this cuold become sequential,
-    // especially because every thread will modify the queue.
-    // one solution is to have sharded queue - each worker manages one queue shard -> minimize cross-core contention.
-    // that also allows us to have lock-free queue.
-
-    // server_fd: server file descriptor
-    // main thread listens and pushes to shared queue
-    // int server_fd, new_socket;
-    // struct sockaddr_in address; // IP address of host machine
     int opt = 1;
     m_addrlen = sizeof(m_address);
     char buffer[1027] = {0}; // C-style character array
@@ -69,10 +53,7 @@ void MultiThreadServer::start()
     // listen for connections, accpet them, and push to job queue
     while (true)
     {
-        // 4. Accept incoming connection, create a new socket for that connection
-        // Open up another connection
-        // Blocking
-        // std::cout << "Producer Thread " << std::to_string(id) << " waiting for connection requests...\n";
+        // 4. Accept incoming connection, create a new socket for that connection. `accept` is blocking.
         int new_socket = accept(m_server_fd, (struct sockaddr *)&m_address, (socklen_t *)&m_addrlen);
         if (new_socket < 0)
         {
@@ -81,40 +62,5 @@ void MultiThreadServer::start()
         }
 
         m_jobQueue.wait_and_push(Task(new_socket));
-
-        // try
-        // {
-        //     m_jobQueue.push(Task(new_socket)); // what if the job queue is full? now is just a single thread pushing
-        //     std::cout << "Pushed to queue\n";
-        // }
-        // catch (const JobQueueFullException &)
-        // {
-        //     std::cout << "Failed to push; queue full\n";
-        //     std::this_thread::sleep_for(std::chrono::seconds(1));
-        // }
     }
-
-    // spawn multiple threads to accept (ie. dequeue from OS-managed listen queue)
-    // for (int i = 0; i < m_numThreads; i++)
-    // {
-    //     m_threads.emplace_back([this, i]()
-    //                            { _acceptConnections(i); });
-    // }
 }
-
-/*
-// 5. Read data
-read(new_socket, buffer, 1024);
-std::cout << "Message from client: " << buffer << std::endl;
-
-// 6. Parse HTTP request
-
-// 7. Build response
-std::string response = buildResponse();
-
-// 8. Send response
-send(new_socket, response.c_str(), response.size(), 0);
-
-// Close socket
-*/
-// close(new_socket);

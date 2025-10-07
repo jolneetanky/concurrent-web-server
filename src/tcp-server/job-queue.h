@@ -66,15 +66,11 @@ public:
     // waits until we are not full before pushing.
     void wait_and_push(const T &item)
     {
-        std::cout << "wait and push" << "\n";
+        // std::cout << "wait and push" << "\n";
         // lock the mutex, and pass to cv
         std::unique_lock<std::mutex> lock(m_mut);
         m_not_full.wait(lock, [this]
                         { return !this->full(); }); // should only run when predicate resolves to true
-
-        // after we've been awoken, we can continue running
-        // run ctor
-        // what if ctor throws? Need to notify another thread waiting on `m_not_full`.
 
         Node<T> *newNode = new Node<T>(item);
 

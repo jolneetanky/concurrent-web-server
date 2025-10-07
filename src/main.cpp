@@ -6,14 +6,10 @@
 
 int main()
 {
-    JobQueue<Task> jobQueue(5);            // shared DS between producer and consumer
-    MultiThreadServer server(jobQueue, 2); // producer
-    ThreadPool threadPool(jobQueue, 3);
+    JobQueue<Task> jobQueue(100);       // shared DS between producer and consumer
+    MultiThreadServer server(jobQueue); // producer
+    ThreadPool threadPool(jobQueue, 10);
 
-    // thread pool that subscribes to the same job queue
-    // threadPool.acceptTasks(); // spawns worker threads to consume from queue. Function immediately returns and is not blocking.
-    // server.start();           // main thread; blocking
-
-    SingleThreadServer stServer;
-    stServer.start();
+    threadPool.acceptTasks();
+    server.start();
 }

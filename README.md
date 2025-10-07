@@ -4,7 +4,8 @@ Just a concurrent web server I wrote to learn more about writing concurrent prog
 
 ## What is a Web Server?
 
-At its very minimal, a web server receives HTTP requests and responds with a certain resource stored on the (physical) server. Like so:
+A very minimal web server server receives HTTP requests and responds with a certain resource.
+![alt text](image-5.png)
 
 ## Features
 
@@ -17,58 +18,59 @@ At its very minimal, a web server receives HTTP requests and responds with a cer
 
 ## Roadmap
 
-- [] Build a sequential web server.
-- [] Write tests + benchmark under high load. (Eg. latency per request, server throughput, ie. number of requests served per second)
-- [] Build a concurrent web server with a pool of connections; one thread per connection.
-- [] Wrtie tests + benchmark under high load. (Eg. average waiting time per request; percentage of requests dropped)
+- [x] Build a sequential web server.
+- [x] Write tests + benchmark under high load. (Eg. latency per request, server throughput, ie. number of requests served per second)
+- [x] Build a concurrent web server with a pool of connections; one thread per connection.
+- [x] Wrtie tests + benchmark under high load. (Eg. average waiting time per request; percentage of requests dropped)
 
-## 3) The First Benchmarks
+## 4) Architecture Diagram - Concurent Web Server
 
-### Throughput (requests/second)
+![alt text](image-9.png)
 
-With low load (1 thread and 1 connection socket on client):
-![alt text](screenshots/image-1.png)
+## 3) Stress Tests
 
-With higher load, throughput remains relatively constant. Read errors also start to appear.
-![alt text](screenshots/image-2.png)
+### Single Threaded (No queue, no synchronization)
 
-Higher load, even more connections.
-![alt text](screenshots/image-3.png)
+![alt text](image-1.png)
 
-I changed to use a HTML file with 50KB file size instead so that the differences in latency would be more meaningful - for instance, now we see the average latency lies in the ms range.
+### Single Threaded (One Worker Thread, Queue Size 100)
 
-1. Low load - minimal to no concurrent requests; raw sequential performance
-   `wrk -t1 -c1 -d10s`
-2. Light concurrency
-   `wrk -t2 -c10 -d10s` - simulating 10 concurrent clients
-   ![alt text](screenshots/image-8.png)
-3. Medium load - some level of concurrent requests
-   `wrk -t4 -c50 -d10s http://127.0.0.1:8080/`
-   ![alt text](screnshots/image-7.png)
-4. High load - high level of concurrent requests
-   `wrk -t8 -c200 -d10s http://127.0.0.1:8080/`
-   ![alt text](screenshots/image-9.png)
-   `wrk -t12 -c800 -d30s http://127.0.0.1:8080/`
-   ![alt text](screenshots/image-10.png)
+![alt text](image-2.png)
 
-So these are the benchmarks we're gonna be working with and make better.
+- Slower than with no synchronization
+- Possible reasons: every push and pop has the overhead of locking/unlocking the mutex, increasing average latency by about a factor of 30 at high load.
 
-Our read errors are increasing! Latency also starts increasing before pkauteuing? Because eventually every requests sits in the queue and waits its turn and I suppose the ttime taken to get from end to start of the queue is now capped at around 18ms.
+### Single Threaded (One Worker Thread, Queue Size 1000)
 
-We can see our throughput remains relatively constant throughout. This is because our server is currently single-threaded and this is the max throughput it can handle - susequent requests are dropped if they cant fit in the queue.
+![alt text](image-3.png)
+I was unpleasantly surprised to find that average latency per request increased by a factor of 8 for the highest load, when I increased queue size.
 
-### Latency Per Request
+But it makes sense because now, if a request can't be served on time, instead of being dropped, it now waits in the queue, and hence average latency increases as waiting time increases.
 
-I used single thread for this
+However, one observation is that read errors decreased, possibly because there is a higher percentage of successful requests.
 
-10s
-![alt text](screenshots/image-4.png)
+### Multi-Threaded (3 Worker Threads, Queue Size 100)
 
-30s
-![alt text](screenshots/image-5.png)
+![alt text](image-4.png)
+I decided to bound my queue size so that average request latency would be lower. It would be better for a request to fail early (and retry) than to wait in the queue a long time.
 
-### Takeaways
+With 3 worker threads, we see an improvement in request latencies as compared to one worker thread & queue size 100.
 
-- ~10–12k requests/sec on average
-- Sub-millisecond average latency (tiny files only)
-- Errors appear when concurrency rises → that’s the signal to move on to threading / pooling
+### Multi-Threaded (10 Worker Threads, Queue Size 100)
+
+![alt text](image-8.png)
+
+### Multi-Threaded (20 Worker Threads, Queue Size 100)
+
+![alt text](image-7.png)
+
+### Comparison
+
+| Worker Threads | Avg Latency (µs/ms)               | Req/s          | Throughput (MB/s) | Observations                                  |
+| -------------- | --------------------------------- | -------------- | ----------------- | --------------------------------------------- |
+| **1**          | ~0.99 ms (LOW) → ~19 ms (HIGHEST) | ~5 200         | ~254 MB/s         | Baseline single-threaded                      |
+| **3**          | ~0.6 ms (LOW) → ~8 ms (HIGHEST)   | ~11 000        | ~540 MB/s         | Big jump in throughput; latency cut in half   |
+| **10**         | ~0.42–0.53 ms                     | ~11 000–13 000 | ~530–650 MB/s     | Peak throughput; lowest latency               |
+| **20**         | ~0.6–0.9 ms                       | ~8 600–9 600   | ~420–460 MB/s     | Throughput _drops_ again; diminishing returns |
+
+From the results, it's clear how having too little threads to service requests leads to high latency, but having too many past a certain pointleads to deminishing returns as high contention for a bounded queue leads to greater overhead. It shows how tweaking parameters is just as important as the system's design.
