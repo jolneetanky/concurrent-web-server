@@ -80,16 +80,18 @@ void MultiThreadServer::start()
             exit(EXIT_FAILURE);
         }
 
-        try
-        {
-            m_jobQueue.push(Task(new_socket)); // what if the job queue is full? now is just a single thread pushing
-            std::cout << "Pushed to queue\n";
-        }
-        catch (const JobQueueFullException &)
-        {
-            std::cout << "Failed to push; queue full\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
+        m_jobQueue.wait_and_push(Task(new_socket));
+
+        // try
+        // {
+        //     m_jobQueue.push(Task(new_socket)); // what if the job queue is full? now is just a single thread pushing
+        //     std::cout << "Pushed to queue\n";
+        // }
+        // catch (const JobQueueFullException &)
+        // {
+        //     std::cout << "Failed to push; queue full\n";
+        //     std::this_thread::sleep_for(std::chrono::seconds(1));
+        // }
     }
 
     // spawn multiple threads to accept (ie. dequeue from OS-managed listen queue)

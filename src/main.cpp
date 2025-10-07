@@ -11,9 +11,9 @@ int main()
     ThreadPool threadPool(jobQueue, 3);
 
     // thread pool that subscribes to the same job queue
-    threadPool.acceptTasks(); // spawns worker threads to consume from queue. Function immediately returns and is not blocking.
-    server.start();           // main thread; blocking
+    // threadPool.acceptTasks(); // spawns worker threads to consume from queue. Function immediately returns and is not blocking.
+    // server.start();           // main thread; blocking
 
-    // SingleThreadServer stServer;
-    // stServer.start();
+    SingleThreadServer stServer;
+    stServer.start();
 }

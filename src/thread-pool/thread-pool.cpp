@@ -28,38 +28,37 @@ void ThreadPool::_consume(int id)
 {
     while (true)
     {
-        try
-        {
-            Task t = m_jobQueue.pop(); // call move ctor; if empty it will throw exception
-            std::cout << "Thread " << std::to_string(id) << " popped a task\n";
 
-            int new_socket = t.socket;
+        Task t = m_jobQueue.wait_and_pop(); // call move ctor; if empty it will throw exception
+        std::cout << "Thread " << std::to_string(id) << " popped a task\n";
 
-            // 5. Read data
-            char buffer[1027] = {0}; // C-style character array
-            read(new_socket, buffer, 1024);
+        int new_socket = t.socket;
 
-            // 6. Parse HTTP request
+        // 5. Read data
+        char buffer[1027] = {0}; // C-style character array
+        read(new_socket, buffer, 1024);
 
-            // 7. Build response
-            std::string response = _buildResponse();
+        // 6. Parse HTTP request
 
-            // 8. Send response
-            send(new_socket, response.c_str(), response.size(), 0);
+        // 7. Build response
+        std::string response = _buildResponse();
 
-            // 9. Close socket
-            close(new_socket);
-        }
-        catch (const JobQueueEmptyException &)
-        {
-            // std::cout << "Thread " << std::to_string(id) << " failed to pop, going to sleep\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-        catch (...)
-        {
-            std::cout << "Thread " << std::to_string(id) << " failed to pop; an unknown exception occurred\n";
-        }
+        // 8. Send response
+        send(new_socket, response.c_str(), response.size(), 0);
+
+        // 9. Close socket
+        close(new_socket);
     }
+    // catch (const JobQueueEmptyException &)
+    // {
+    //     // std::cout << "Thread " << std::to_string(id) << " failed to pop, going to sleep\n";
+    //     std::this_thread::sleep_for(std::chrono::seconds(1));
+    // }
+    // catch (...)
+    // {
+    //     std::cout << "Thread " << std::to_string(id) << " failed to pop; an unknown exception occurred\n";
+    // }
+    // }
 }
 
 std::string ThreadPool::_buildResponse()
