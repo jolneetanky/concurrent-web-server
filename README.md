@@ -76,7 +76,7 @@ With 3 worker threads, we see an improvement in request latencies as compared to
 
 From the results, it's clear how having too little threads to service requests leads to high latency, but having too many past a certain pointleads to deminishing returns as high contention for a bounded queue leads to greater overhead. It shows how tweaking parameters is just as important as the system's design.
 
-Latency aside, w see how throughput is much higher with multiple threads handling our workload - it improves by a factor of 2!
+Latency aside, we see how throughput is much higher with multiple threads handling our workload - it improves by a factor of 2!
 
 ## 4) Future Improvements
 
