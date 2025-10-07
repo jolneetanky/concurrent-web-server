@@ -5,7 +5,7 @@ Just a concurrent web server I wrote to learn more about writing concurrent prog
 ## What is a Web Server?
 
 A very minimal web server server receives HTTP requests and responds with a certain resource.
-![alt text](image-5.png)
+![alt text](screenshots/image-5.png)
 
 ## Features
 
@@ -25,24 +25,24 @@ A very minimal web server server receives HTTP requests and responds with a cert
 
 ## 4) Architecture Diagram - Concurent Web Server
 
-![alt text](image-9.png)
+![alt text](screenshots/image-9.png)
 
 ## 3) Stress Tests
 
 ### Single Threaded (No queue, no synchronization)
 
-![alt text](image-1.png)
+![alt text](screenshots/image-1.png)
 
 ### Single Threaded (One Worker Thread, Queue Size 100)
 
-![alt text](image-2.png)
+![alt text](screenshots/image-2.png)
 
 - Slower than with no synchronization
 - Possible reasons: every push and pop has the overhead of locking/unlocking the mutex, increasing average latency by about a factor of 30 at high load.
 
 ### Single Threaded (One Worker Thread, Queue Size 1000)
 
-![alt text](image-3.png)
+![alt text](screenshots/image-3.png)
 I was unpleasantly surprised to find that average latency per request increased by a factor of 8 for the highest load, when I increased queue size.
 
 But it makes sense because now, if a request can't be served on time, instead of being dropped, it now waits in the queue, and hence average latency increases as waiting time increases.
@@ -51,18 +51,18 @@ However, one observation is that read errors decreased, possibly because there i
 
 ### Multi-Threaded (3 Worker Threads, Queue Size 100)
 
-![alt text](image-4.png)
+![alt text](screenshots/image-4.png)
 I decided to bound my queue size so that average request latency would be lower. It would be better for a request to fail early (and retry) than to wait in the queue a long time.
 
 With 3 worker threads, we see an improvement in request latencies as compared to one worker thread & queue size 100.
 
 ### Multi-Threaded (10 Worker Threads, Queue Size 100)
 
-![alt text](image-8.png)
+![alt text](screenshots/image-8.png)
 
 ### Multi-Threaded (20 Worker Threads, Queue Size 100)
 
-![alt text](image-7.png)
+![alt text](screenshots/image-7.png)
 
 ### Comparison
 
@@ -74,3 +74,8 @@ With 3 worker threads, we see an improvement in request latencies as compared to
 | **20**         | ~0.6–0.9 ms                       | ~8 600–9 600   | ~420–460 MB/s     | Throughput _drops_ again; diminishing returns |
 
 From the results, it's clear how having too little threads to service requests leads to high latency, but having too many past a certain pointleads to deminishing returns as high contention for a bounded queue leads to greater overhead. It shows how tweaking parameters is just as important as the system's design.
+
+## 4) Future Improvements
+
+- Queue could be refactored to have more granular locking, possibly even lock-free to minimize contention.
+- I did not implement security mesasures in this HTTP server; which is equally as vital for a production-grade HTTP server.
