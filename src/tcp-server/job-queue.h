@@ -5,8 +5,6 @@
 #include <condition_variable>
 #include <iostream>
 
-// Define a new exception class that
-// inherits from std::exception
 class JobQueueFullException : public std::runtime_error
 {
 public:

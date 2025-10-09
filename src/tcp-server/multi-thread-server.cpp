@@ -6,8 +6,6 @@
 
 MultiThreadServer::MultiThreadServer(JobQueue<Task> &jobQueue) : m_jobQueue{jobQueue} {};
 
-// test this
-// when we make one connection request, push() is called
 void MultiThreadServer::start()
 {
     int opt = 1;
